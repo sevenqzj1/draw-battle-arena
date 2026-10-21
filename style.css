@@ -18,3 +18,19 @@ select{font:inherit;border-radius:10px;padding:10px 12px;background:#090d1f;bord
 .action-tools{padding-top:4px;border-top:1px solid var(--line)}
 canvas{cursor:crosshair}
 @media(max-width:650px){.colors{grid-template-columns:repeat(8,minmax(20px,1fr));gap:9px}.swatch{max-width:38px;height:34px}.paint-toolbar{padding:12px}.tool-buttons button{padding:8px 10px}.duration-setting{max-width:none;width:100%}}
+
+/* Animated login and pre-round theme reveal */
+.login-gate{position:relative;isolation:isolate;min-height:470px;display:grid;place-items:center;overflow:hidden;border:1px solid #38345f;border-radius:26px;background:radial-gradient(ellipse at 50% 15%,#392d70 0,#161b39 42%,#0b1022 100%);box-shadow:0 28px 90px #0006;margin:16px 0 26px}
+.login-card{position:relative;z-index:2;width:min(100% - 32px,430px);padding:32px;border:1px solid #ffffff22;border-radius:23px;background:#0c1026d9;backdrop-filter:blur(16px);box-shadow:0 20px 70px #0006;animation:loginRise .75s cubic-bezier(.2,.8,.2,1) both}
+.login-card h2{font-size:30px;letter-spacing:-1px;margin:4px 0 8px}.login-card .eyebrow{color:var(--cyan);margin-top:12px}.login-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(135deg,var(--purple),var(--cyan));color:#080a16;font-size:31px;font-weight:900;box-shadow:0 0 35px #9d72ff55;animation:markFloat 3s ease-in-out infinite}
+.login-feature{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#9fa8d0;font-size:11px;margin-top:20px}
+.login-orbit{position:absolute;z-index:1;border:1px solid #8f7aff38;border-radius:50%;width:360px;height:360px;pointer-events:none;animation:orbitSpin 22s linear infinite}
+.orbit-one{right:-100px;top:-180px}.orbit-two{left:-150px;bottom:-240px;width:440px;height:440px;border-color:#52f5ef30;animation-direction:reverse}
+.theme-box.theme-reveal{border-color:var(--cyan);box-shadow:0 0 0 1px #52f5ef44,0 0 32px #52f5ef22;animation:themePulse 1.4s ease-in-out infinite}
+.theme-box.theme-reveal strong{font-size:clamp(28px,5vw,40px);color:var(--cyan);text-shadow:0 0 22px #52f5ef55}
+@keyframes loginRise{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes markFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-6px) rotate(5deg)}}
+@keyframes orbitSpin{to{transform:rotate(360deg)}}
+@keyframes themePulse{0%,100%{box-shadow:0 0 0 1px #52f5ef22,0 0 18px #52f5ef11}50%{box-shadow:0 0 0 2px #52f5ef66,0 0 35px #52f5ef33}}
+@media(max-width:560px){.login-gate{min-height:430px}.login-card{padding:24px}.login-feature{flex-direction:column;gap:5px}}
+@media(prefers-reduced-motion:reduce){.login-card,.login-mark,.login-orbit,.theme-box.theme-reveal{animation:none}}
