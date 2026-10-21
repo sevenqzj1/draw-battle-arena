@@ -34,3 +34,6 @@ canvas{cursor:crosshair}
 @keyframes themePulse{0%,100%{box-shadow:0 0 0 1px #52f5ef22,0 0 18px #52f5ef11}50%{box-shadow:0 0 0 2px #52f5ef66,0 0 35px #52f5ef33}}
 @media(max-width:560px){.login-gate{min-height:430px}.login-card{padding:24px}.login-feature{flex-direction:column;gap:5px}}
 @media(prefers-reduced-motion:reduce){.login-card,.login-mark,.login-orbit,.theme-box.theme-reveal{animation:none}}
+
+/* Avaliação dos desenhos de 0 a 10 */
+.rating-label{display:flex;justify-content:space-between;align-items:center;margin:12px 0 4px;letter-spacing:.2px;font-size:12px}.rating-label strong{color:var(--cyan);font-size:16px}.rating-range{width:100%;accent-color:var(--cyan);padding:0;margin:7px 0 12px;cursor:pointer}.rating-range:disabled{opacity:.45;cursor:not-allowed}.drawing-card [data-vote]{width:100%}
