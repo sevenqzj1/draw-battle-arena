@@ -1,68 +1,44 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Draw Battle Arena</title>
-<style>
-:root{color-scheme:dark;--bg:#090b18;--panel:#12162a;--line:#282e4b;--cyan:#52f5ef;--purple:#9d72ff;--text:#f4f5ff;--muted:#a5acc9}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#20204b 0,#090b18 55%);color:var(--text);font:15px/1.5 system-ui,Segoe UI,sans-serif;min-height:100vh}main{max-width:1050px;margin:auto;padding:28px 18px 60px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:grid;place-items:center;color:#080a16;font-size:25px;font-weight:900}.brand h1{margin:0;font-size:clamp(22px,4vw,34px);letter-spacing:-1px}.brand p{margin:0;color:var(--muted)}.card{background:#11152beF;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 20px 60px #0004;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}h2{font-size:20px;margin:0 0 12px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 5px}input,button{font:inherit;border-radius:11px;padding:11px 13px}input{width:100%;background:#090d1f;border:1px solid var(--line);color:var(--text)}button{cursor:pointer;border:1px solid #45466b;color:var(--text);background:#202544;font-weight:700}button:hover{filter:brightness(1.18)}button.primary{background:linear-gradient(110deg,var(--purple),#5b8eff);border:0;color:white}button:disabled{opacity:.45;cursor:not-allowed}.muted{color:var(--muted)}.hidden{display:none!important}.status{color:var(--cyan);font-size:13px;min-height:22px}.roomline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.code{font-size:25px;font-weight:900;letter-spacing:5px;color:var(--cyan)}.players{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#202543;border:1px solid var(--line);padding:7px 10px;border-radius:999px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.colors{display:flex;gap:8px}.swatch{width:28px;height:28px;padding:0;border-radius:50%;border:2px solid #ffffff55}.swatch.active{outline:2px solid white;outline-offset:2px}canvas{width:100%;height:auto;aspect-ratio:4/3;background:#fff;border-radius:13px;touch-action:none;display:block;border:1px solid #45466b}.drawgrid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr);gap:16px}.art{width:100%;background:#fff;border-radius:12px;display:block}.submissions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.submission{background:#0b1022;border:1px solid var(--line);border-radius:14px;padding:12px}.submission button{width:100%;margin-top:8px}.foot{text-align:center;color:#777f9f;font-size:12px;margin-top:30px}@media(max-width:700px){.drawgrid{grid-template-columns:1fr}.card{padding:16px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b18">
+  <meta name="description" content="Draw Battle Arena: desenhe ao vivo, dispute temas e vote com amigos.">
+  <title>Draw Battle Arena</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="app.js"></script>
 </head>
-<body><main>
-<header class="brand"><div class="logo">✎</div><div><h1>DRAW BATTLE ARENA</h1><p>Desenhe. Dispute. Vote. Seja a lenda da arena.</p></div></header>
-<section id="setup" class="grid">
-<div class="card"><h2>⚡ Criar arena</h2><label>Seu nome</label><input id="hostName" maxlength="18" placeholder="Como vão te chamar?"><button class="primary" id="create" style="width:100%;margin-top:12px">Criar sala</button></div>
-<div class="card"><h2>🎮 Entrar na arena</h2><label>Seu nome</label><input id="joinName" maxlength="18" placeholder="Seu nome"><label>Código da sala</label><input id="roomCode" maxlength="6" placeholder="ABC123" style="text-transform:uppercase"><button id="join" style="width:100%;margin-top:12px">Entrar na sala</button></div>
-</section>
-<div class="status" id="status"></div>
-<section id="arena" class="hidden">
-<div class="card"><div class="roomline"><div><div class="muted">CÓDIGO DA ARENA</div><div class="code" id="codeLabel">------</div></div><button id="copy">Copiar código</button><div style="flex:1"></div><button id="leave">Sair</button></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div class="muted">JOGADORES</div><div id="players" class="players" style="margin-top:8px"></div><p id="phaseText" class="muted">Aguardando o anfitrião iniciar a batalha.</p><button id="start" class="primary hidden">Iniciar rodada</button></div>
-<div id="drawing" class="card hidden"><div class="roomline"><div><h2>🎨 Sua obra-prima</h2><div class="muted" id="roundInfo">Rodada 1</div></div><div style="flex:1"></div><div class="code" id="countdown">60s</div></div><div class="toolbar"><div class="colors" id="colors"></div><button id="eraser">Borracha</button><button id="undo">Desfazer</button><button id="clear">Limpar</button><button id="submit" class="primary">Enviar desenho</button></div><canvas id="canvas" width="800" height="600"></canvas></div>
-<div id="voting" class="card hidden"><h2>🗳️ Hora de votar</h2><p class="muted">Vote no desenho favorito. Não pode votar no próprio desenho.</p><div id="submissions" class="submissions"></div><button id="nextRound" class="primary hidden" style="margin-top:16px">Próxima rodada</button></div>
-<div id="results" class="card hidden"><h2>🏆 Placar da arena</h2><div id="scores"></div><button id="playAgain" class="primary" style="margin-top:14px">Jogar novamente</button></div>
-</section><div class="foot">Draw Battle Arena · Feito para jogar com amigos</div>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL='https://alfcxgmrztuioegejodm.supabase.co';
-const SUPABASE_KEY='sb_publishable_QgKVX1O7yu_f9GlumEPM7Q_hDR7wQxj';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=id=>document.getElementById(id);
-let channel=null,room='',player='',isHost=false,players={},game={phase:'lobby',round:1,drawings:{},votes:{},scores:{}},color='#17172a',eraser=false,painting=false,points=[],undoStack=[],submitted=false,timer=null,seconds=60;
-const palette=['#17172a','#f43f5e','#fb923c','#facc15','#4ade80','#22d3ee','#3b82f6','#a78bfa','#f472b6','#ffffff','#92400e','#000000'];
-$('colors').innerHTML=palette.map((c,i)=>'<button class="swatch '+(i===0?'active':'')+'" data-color="'+c+'" style="background:'+c+'" aria-label="Cor '+c+'"></button>').join('');
-$('colors').addEventListener('click',e=>{const b=e.target.closest('[data-color]');if(!b)return;color=b.dataset.color;eraser=false;document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x===b));});
-function say(t){$('status').textContent=t}
-function makeCode(){return Math.random().toString(36).slice(2,8).toUpperCase()}
-function broadcast(){if(isHost&&channel)channel.send({type:'broadcast',event:'state',payload:{game,players}})}
-function updatePlayers(){ $('players').innerHTML=Object.values(players).map(p=>'<span class="pill">'+esc(p.name)+(p.id===player?' (você)':'')+(p.id===Object.keys(players)[0]?' ★':'')+'</span>').join('')||'<span class="muted">Nenhum jogador conectado</span>'}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function render(){ $('setup').classList.add('hidden');$('arena').classList.remove('hidden');$('codeLabel').textContent=room;$('start').classList.toggle('hidden',!isHost||game.phase!=='lobby');$('phaseText').textContent=game.phase==='lobby'?'Aguardando o anfitrião iniciar a batalha.':game.phase==='draw'?'Rodada '+game.round+' · desenhe antes que o tempo acabe!':game.phase==='vote'?'Vote na melhor obra!':'Batalha finalizada.';$('drawing').classList.toggle('hidden',game.phase!=='draw'||submitted);$('voting').classList.toggle('hidden',game.phase!=='vote');$('results').classList.toggle('hidden',game.phase!=='results');$('roundInfo').textContent='Rodada '+game.round+' de 3';updatePlayers();if(game.phase==='vote')renderVotes();if(game.phase==='results')renderScores()}
-function connect(code,name,host){room=code;player=crypto.randomUUID();isHost=host;players[player]={id:player,name:name||'Jogador'};game.scores[player]=0;channel=sb.channel('draw-battle-'+room,{config:{presence:{key:player},broadcast:{self:false}}});
-channel.on('presence',{event:'sync'},()=>{const state=channel.presenceState();const next={};Object.values(state).flat().forEach(p=>{if(p&&p.id)next[p.id]=p});if(Object.keys(next).length)players=next;updatePlayers();if(isHost)broadcast()});
-channel.on('broadcast',{event:'state'},({payload})=>{if(!isHost&&payload){game=payload.game;players=payload.players||players;render()}});
-channel.on('broadcast',{event:'draw'},({payload})=>{if(payload&&payload.id!==player){game.drawings[payload.id]=payload; if(game.phase==='vote')renderVotes()}});
-channel.on('broadcast',{event:'vote'},({payload})=>{if(isHost&&payload&&payload.voter!==payload.target){game.votes[payload.voter]=payload.target;game.scores[payload.target]=(game.scores[payload.target]||0)+1;broadcast()}});
-channel.subscribe(async status=>{if(status==='SUBSCRIBED'){await channel.track({id:player,name:players[player].name});$('codeLabel').textContent=room;render();say('Conectado à arena. Compartilhe o código com seus amigos.');if(isHost)broadcast()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')say('Falha ao conectar ao Supabase Realtime. Confira a configuração do projeto.')})}
-$('create').onclick=()=>{const n=$('hostName').value.trim();if(!n)return say('Digite seu nome primeiro.');connect(makeCode(),n,true)};
-$('join').onclick=()=>{const n=$('joinName').value.trim(),c=$('roomCode').value.trim().toUpperCase();if(!n||c.length!==6)return say('Informe seu nome e o código de 6 caracteres.');connect(c,n,false)};
-$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(room);say('Código copiado!')}catch{say('Código da sala: '+room)}};
-$('leave').onclick=()=>{if(timer)clearInterval(timer);if(channel)sb.removeChannel(channel);channel=null;room='';players={};game={phase:'lobby',round:1,drawings:{},votes:{},scores:{}};$('arena').classList.add('hidden');$('setup').classList.remove('hidden');say('Você saiu da arena.')};
-$('start').onclick=()=>{if(!isHost)return;game={phase:'draw',round:1,drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;broadcast();render();startTimer(60)};
-const canvas=$('canvas'),ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,800,600);ctx.lineCap='round';ctx.lineJoin='round';
-function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
-canvas.addEventListener('pointerdown',e=>{if(game.phase!=='draw'||submitted)return;painting=true;canvas.setPointerCapture(e.pointerId);const p=pos(e);points.push({x:p.x,y:p.y,color:eraser?'#ffffff':color,w:eraser?30:5});ctx.beginPath();ctx.moveTo(p.x,p.y)});
-canvas.addEventListener('pointermove',e=>{if(!painting)return;const p=pos(e),last=points[points.length-1];ctx.strokeStyle=eraser?'#ffffff':color;ctx.lineWidth=eraser?30:5;ctx.lineTo(p.x,p.y);ctx.stroke();points.push({x:p.x,y:p.y,color:eraser?'#ffffff':color,w:eraser?30:5})});
-canvas.addEventListener('pointerup',()=>{if(painting){painting=false;undoStack.push(points.slice());points=[]}});
-$('eraser').onclick=()=>eraser=!eraser;$('undo').onclick=()=>{undoStack.pop();redraw()};$('clear').onclick=()=>{undoStack.push([]);redraw()};
-function redraw(){ctx.fillStyle='#fff';ctx.fillRect(0,0,800,600);undoStack.forEach(stroke=>{if(!stroke.length)return;ctx.beginPath();ctx.moveTo(stroke[0].x,stroke[0].y);stroke.forEach(p=>{ctx.strokeStyle=p.color;ctx.lineWidth=p.w;ctx.lineTo(p.x,p.y);ctx.stroke()})})}
-$('submit').onclick=submitDraw;
-function submitDraw(){if(submitted||game.phase!=='draw')return;submitted=true;const data={id:player,name:players[player]?.name||'Jogador',image:canvas.toDataURL('image/jpeg',.65)};game.drawings[player]=data;channel.send({type:'broadcast',event:'draw',payload:data});if(isHost){game.drawings[player]=data;if(Object.keys(game.drawings).length>=Object.keys(players).length)beginVote()}else say('Desenho enviado! Aguarde a votação.');$('drawing').classList.add('hidden');broadcast()}
-function startTimer(n){if(timer)clearInterval(timer);seconds=n;$('countdown').textContent=seconds+'s';timer=setInterval(()=>{seconds--;$('countdown').textContent=seconds+'s';if(seconds<=0){clearInterval(timer);if(isHost)beginVote();else if(!submitted)submitDraw()}},1000)}
-function beginVote(){if(!isHost)return;game.phase='vote';broadcast();render();if(timer)clearInterval(timer)}
-function renderVotes(){const list=Object.values(game.drawings||{});$('submissions').innerHTML=list.map(d=>'<div class="submission"><div class="muted">'+esc(d.name)+'</div><img class="art" src="'+d.image+'" alt="Desenho de '+esc(d.name)+'"><button '+(d.id===player||game.votes[player]?'disabled':'')+' data-vote="'+d.id+'">'+(d.id===player?'Seu desenho':game.votes[player]?'Voto registrado':'Votar nesta obra')+'</button></div>').join('')||'<p class="muted">Os desenhos ainda estão chegando...</p>'; $('submissions').querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>{const target=b.dataset.vote;if(target===player||game.votes[player])return;game.votes[player]=target;channel.send({type:'broadcast',event:'vote',payload:{voter:player,target}});if(isHost){game.scores[target]=(game.scores[target]||0)+1;broadcast()}renderVotes();say('Voto registrado!');if(isHost&&Object.keys(game.votes).length>=Object.keys(players).length)finishRound()});$('nextRound').classList.toggle('hidden',!isHost)}
-$('nextRound').onclick=()=>{if(!isHost)return;if(game.round>=3){game.phase='results';broadcast();render();return}game.round++;game.phase='draw';game.drawings={};game.votes={};submitted=false;undoStack=[];redraw();broadcast();render();startTimer(60)};
-function finishRound(){if(game.round>=3){game.phase='results';broadcast();render()}else $('nextRound').classList.remove('hidden')}
-function renderScores(){const arr=Object.entries(game.scores||{}).sort((a,b)=>b[1]-a[1]);$('scores').innerHTML=arr.map(([id,score],i)=>'<div class="pill" style="margin:7px 0">#'+(i+1)+' · '+esc(players[id]?.name||'Jogador')+' — '+score+' ponto(s)</div>').join('')||'Sem pontuação ainda.'}
-$('playAgain').onclick=()=>{if(!isHost)return say('Somente o anfitrião pode reiniciar.');game={phase:'lobby',round:1,drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;broadcast();render()};
-</script></body></html>
+<body>
+  <main class="shell">
+    <header class="brand">
+      <div class="logo" aria-hidden="true">✎</div>
+      <div><h1>DRAW BATTLE ARENA</h1><p>Desenhe ao vivo. Dispute com amigos.</p></div>
+    </header>
+    <section id="setup" class="setup-grid">
+      <article class="panel"><h2>Criar arena</h2><label for="hostName">Seu nome</label><input id="hostName" maxlength="18" placeholder="Como vão te chamar?"><button id="create" class="primary full">Criar sala</button></article>
+      <article class="panel"><h2>Entrar na arena</h2><label for="joinName">Seu nome</label><input id="joinName" maxlength="18" placeholder="Seu nome"><label for="roomCode">Código da sala</label><input id="roomCode" maxlength="6" placeholder="ABC123"><button id="join" class="full">Entrar na sala</button></article>
+    </section>
+    <p id="status" class="status" role="status">Crie uma sala ou entre com o código de um amigo.</p>
+    <section id="arena" class="hidden">
+      <article class="panel room-panel">
+        <div class="room-top"><div><span class="eyebrow">CÓDIGO DA ARENA</span><div id="codeLabel" class="room-code">------</div></div><button id="copy">Copiar código</button><span class="grow"></span><button id="leave" class="subtle">Sair</button></div>
+        <div class="eyebrow">JOGADORES CONECTADOS</div><div id="players" class="players"></div>
+        <div id="themeBox" class="theme-box"><span class="eyebrow">TEMA DA RODADA</span><strong id="theme">Aguardando anfitrião...</strong><span id="roundInfo" class="muted">3 rodadas · 60 segundos por desenho</span></div>
+        <div class="room-actions"><p id="phaseText" class="muted">Aguardando o anfitrião iniciar a batalha.</p><div class="timer" id="countdown">60s</div><button id="start" class="primary hidden">Começar batalha</button></div>
+      </article>
+      <article id="drawing" class="panel hidden">
+        <div class="section-heading"><div><h2>Sua tela de desenho</h2><p class="muted">Os outros jogadores veem seus traços em tempo real.</p></div><span id="liveBadge" class="live-badge">AO VIVO</span></div>
+        <div class="toolbar"><div id="colors" class="colors" aria-label="Cores"></div><button id="eraser">Borracha</button><button id="undo">Desfazer</button><button id="clear">Limpar</button><button id="submit" class="primary">Enviar desenho</button></div>
+        <canvas id="canvas" width="800" height="600" aria-label="Área para desenhar"></canvas>
+        <p id="drawHint" class="muted small">Dica: desenhe algo que represente o tema e envie antes do tempo acabar.</p>
+      </article>
+      <article id="liveGallery" class="panel hidden"><div class="section-heading"><div><h2>Desenhos ao vivo</h2><p class="muted">Acompanhe o progresso dos seus amigos.</p></div></div><div id="liveDrawings" class="drawings-grid"></div></article>
+      <article id="voting" class="panel hidden"><h2>Hora de votar</h2><p class="muted">Escolha sua obra favorita. Você não pode votar no próprio desenho.</p><div id="submissions" class="drawings-grid"></div><button id="nextRound" class="primary hidden top-gap">Próxima rodada</button></article>
+      <article id="results" class="panel hidden"><h2>Placar final</h2><div id="scores" class="score-list"></div><button id="playAgain" class="primary top-gap">Jogar novamente</button></article>
+    </section>
+    <footer>Draw Battle Arena · Partidas entre amigos</footer>
+  </main>
+</body>
+</html>
