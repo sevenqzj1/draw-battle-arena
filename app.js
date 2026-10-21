@@ -19,12 +19,12 @@ function send(event,payload){if(channel)channel.send({type:'broadcast',event,pay
 function syncState(){if(isHost)send('state',{game,players})}
 function renderPlayers(){$('players').innerHTML=Object.values(players).map(p=>'<span class="pill">'+escapeHtml(p.name)+(p.id===player?' (você)':'')+'</span>').join('')||'<span class="muted">Esperando jogadores entrarem...</span>'}
 function render(){
- $('setup').classList.add('hidden');$('arena').classList.remove('hidden');$('durationSetting').classList.toggle('hidden',!isHost||game.phase!=='lobby');$('durationSetting').classList.toggle('hidden',!isHost||game.phase!=='lobby');
+ $('setup').classList.add('hidden');$('loginGate').classList.add('hidden');$('arena').classList.remove('hidden');$('durationSetting').classList.toggle('hidden',!isHost||game.phase!=='lobby');
  $('codeLabel').textContent=room;$('theme').textContent=game.theme||'Aguardando anfitrião...';
  $('roundInfo').textContent=game.phase==='lobby'?'3 rodadas · '+(game.duration||120)+' segundos por desenho':'Rodada '+game.round+' de 3';
  $('start').classList.toggle('hidden',!isHost||game.phase!=='lobby');
- $('phaseText').textContent=({lobby:'Compartilhe o código e comece quando todos estiverem prontos.',draw:'Desenhem! Os traços aparecem ao vivo para a sala.',vote:'Escolha o desenho favorito da rodada.',results:'Batalha encerrada. Confira o placar.'})[game.phase]||'';
- $('drawing').classList.toggle('hidden',game.phase!=='draw'||submitted);
+ $('phaseText').textContent=({lobby:'Compartilhe o código e comece quando todos estiverem prontos.',ready:'Memorize o tema! A rodada vai começar em instantes.',draw:'Desenhem! Os traços aparecem ao vivo para a sala.',vote:'Escolha o desenho favorito da rodada.',results:'Batalha encerrada. Confira o placar.'})[game.phase]||'';
+ $('drawing').classList.toggle('hidden',game.phase!=='draw'||submitted);$('themeBox').classList.toggle('theme-reveal',game.phase==='ready');if(game.phase==='ready')$('countdown').textContent='5s';
  $('liveGallery').classList.toggle('hidden',game.phase!=='draw');
  $('voting').classList.toggle('hidden',game.phase!=='vote');
  $('results').classList.toggle('hidden',game.phase!=='results');
@@ -50,15 +50,18 @@ function startConnect(roomCode,name,host){
  channel.on('broadcast',{event:'vote'},({payload})=>{if(!isHost||!payload||payload.voter===payload.target||game.votes[payload.voter])return;game.votes[payload.voter]=payload.target;game.scores[payload.target]=(game.scores[payload.target]||0)+1;syncState();if(Object.keys(game.votes).length>=Object.keys(players).length)finishRound()});
  channel.subscribe(async status=>{if(status==='SUBSCRIBED'){await channel.track({id:player,name:players[player].name});render();say('Conectado. Compartilhe o código '+room+' com seus amigos.');if(isHost)syncState()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')say('Não foi possível conectar ao Realtime. Verifique as configurações do Supabase.')});
 }
+$('loginEnter').onclick=()=>{const name=$('loginName').value.trim();if(!name)return say('Digite seu nome para continuar.');$('hostName').value=name;$('joinName').value=name;$('loginGate').classList.add('hidden');$('setup').classList.remove('hidden');$('status').classList.remove('hidden');say('Bem-vindo, '+name+'! Crie uma sala ou entre com o código de um amigo.')};
+$('loginName').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginEnter').click()});
 $('create').onclick=()=>{const name=$('hostName').value.trim();if(!name)return say('Digite seu nome para criar uma sala.');startConnect(code(),name,true)};
 $('join').onclick=()=>{const name=$('joinName').value.trim(),roomCode=$('roomCode').value.trim().toUpperCase();if(!name||roomCode.length!==6)return say('Digite seu nome e o código de seis caracteres.');startConnect(roomCode,name,false)};
 $('roomCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(room);say('Código copiado!')}catch{say('Código da sala: '+room)}};
 $('leave').onclick=async()=>{if(timer)clearInterval(timer);if(channel)await sb.removeChannel(channel);channel=null;room='';players={};game={phase:'lobby',round:1,theme:'',drawings:{},votes:{},scores:{}};$('arena').classList.add('hidden');$('setup').classList.remove('hidden');say('Você saiu da arena.')};
 $('start').onclick=()=>{if(!isHost)return;const firstTheme=THEMES[Math.floor(Math.random()*THEMES.length)];game={phase:'draw',round:1,theme:firstTheme,duration:Number($('roundDuration').value)||120,usedThemes:[firstTheme],drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;resetDrawing();syncState();render();startTimer(game.duration)};
+function revealRound(){if(!isHost||game.phase!=='ready')return;if(timer)clearInterval(timer);let left=5;$('countdown').textContent=left+'s';const token=++roundToken;timer=setInterval(()=>{if(token!==roundToken)return;left--;$('countdown').textContent=left+'s';if(left<=0){clearInterval(timer);timer=null;game.phase='draw';syncState();render();startTimer(game.duration||120)}},1000)}
 function startTimer(value){if(timer)clearInterval(timer);seconds=value;$('countdown').textContent=seconds+'s';const token=++roundToken;timer=setInterval(()=>{if(token!==roundToken)return;seconds--;$('countdown').textContent=seconds+'s';if(seconds<=0){clearInterval(timer);if(!submitted)submitDrawing();if(isHost)beginVote()}},1000)}
 function beginVote(){if(!isHost||game.phase!=='draw')return;game.phase='vote';if(timer)clearInterval(timer);syncState();render();say('Tempo encerrado! Hora de votar.')}
-function startNextRound(){if(!isHost)return;if(game.round>=3){game.phase='results';syncState();render();return}game.round++;game.phase='draw';const availableThemes=THEMES.filter(t=>!(game.usedThemes||[]).includes(t));game.theme=availableThemes[Math.floor(Math.random()*availableThemes.length)]||THEMES[(game.round-1)%THEMES.length];game.usedThemes=[...(game.usedThemes||[]),game.theme];game.drawings={};game.votes={};submitted=false;resetDrawing();syncState();render();startTimer(game.duration||120)}
+function startNextRound(){if(!isHost)return;if(game.round>=3){game.phase='results';syncState();render();return}game.round++;game.phase='ready';const availableThemes=THEMES.filter(t=>!(game.usedThemes||[]).includes(t));game.theme=availableThemes[Math.floor(Math.random()*availableThemes.length)]||THEMES[(game.round-1)%THEMES.length];game.usedThemes=[...(game.usedThemes||[]),game.theme];game.drawings={};game.votes={};submitted=false;resetDrawing();syncState();render();revealRound()}
 $('nextRound').onclick=startNextRound;
 $('playAgain').onclick=()=>{if(!isHost)return say('Só o anfitrião pode reiniciar a partida.');game={phase:'lobby',round:1,theme:'',drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;syncState();render()};
 function getPos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
