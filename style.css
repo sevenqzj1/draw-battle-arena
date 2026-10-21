@@ -37,3 +37,23 @@ canvas{cursor:crosshair}
 
 /* Avaliação dos desenhos de 0 a 10 */
 .rating-label{display:flex;justify-content:space-between;align-items:center;margin:12px 0 4px;letter-spacing:.2px;font-size:12px}.rating-label strong{color:var(--cyan);font-size:16px}.rating-range{width:100%;accent-color:var(--cyan);padding:0;margin:7px 0 12px;cursor:pointer}.rating-range:disabled{opacity:.45;cursor:not-allowed}.drawing-card [data-vote]{width:100%}
+
+
+/* Sala cheia, referência, votação cega e pódio */
+.players-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.players-heading .eyebrow{margin-bottom:5px}
+.count-badge,.stage-badge{display:inline-flex;align-items:center;justify-content:center;border:1px solid #397a83;background:#12323d;color:var(--cyan);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:900;white-space:nowrap}
+.stage-badge{margin:2px 0 10px;background:#292347;border-color:#6652a1;color:#d4c3ff;letter-spacing:1px}
+.reference-panel{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,340px);align-items:center;gap:20px}
+.reference-panel img,.vote-reference img{display:block;width:100%;max-height:280px;object-fit:contain;background:#fff;border-radius:14px;border:1px solid var(--line)}
+.vote-reference{max-width:360px;margin:12px 0 18px}
+.vote-reference img{max-height:220px}
+.winner-row{border-color:#d5ad45;background:linear-gradient(100deg,#49381455,#0b1022);box-shadow:0 0 0 1px #d5ad4530}
+.podium-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));align-items:end;gap:12px;margin-top:14px}
+.podium-card{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:14px 10px;background:#0b1022;border:1px solid var(--line);border-radius:14px;min-width:0}
+.podium-card img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff;border-radius:9px}
+.podium-rank{font-weight:900;color:var(--cyan)}
+.podium-first{border-color:#d5ad45;box-shadow:0 0 24px #d5ad4519;transform:translateY(-5px)}
+.podium-first .podium-rank{color:#f6d36b}
+#submissions .drawing-name{letter-spacing:.6px}
+@media(max-width:650px){.reference-panel{grid-template-columns:1fr}.reference-panel img{max-height:220px}.podium-first{transform:none}.count-badge{font-size:11px}}
