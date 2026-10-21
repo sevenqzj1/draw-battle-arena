@@ -16,16 +16,17 @@
       <div class="logo" aria-hidden="true">✎</div>
       <div><h1>DRAW BATTLE ARENA</h1><p>Desenhe ao vivo. Dispute com amigos.</p></div>
     </header>
-    <section id="setup" class="setup-grid">
+    <section id="loginGate" class="login-gate"><div class="login-orbit orbit-one"></div><div class="login-orbit orbit-two"></div><div class="login-card"><div class="login-mark">✎</div><p class="eyebrow">MULTIPLAYER DRAWING GAME</p><h2>Entre na arena</h2><p class="muted">Escolha como quer ser chamado antes de jogar com seus amigos.</p><label for="loginName">Seu nome de jogador</label><input id="loginName" maxlength="18" placeholder="Digite seu apelido" autocomplete="nickname"><button id="loginEnter" class="primary full">Entrar no jogo <span aria-hidden="true">→</span></button><div class="login-feature"><span>● Salas com amigos</span><span>● Desenho ao vivo</span></div></div></section>
+    <section id="setup" class="setup-grid hidden">
       <article class="panel"><h2>Criar arena</h2><label for="hostName">Seu nome</label><input id="hostName" maxlength="18" placeholder="Como vão te chamar?"><button id="create" class="primary full">Criar sala</button></article>
       <article class="panel"><h2>Entrar na arena</h2><label for="joinName">Seu nome</label><input id="joinName" maxlength="18" placeholder="Seu nome"><label for="roomCode">Código da sala</label><input id="roomCode" maxlength="6" placeholder="ABC123"><button id="join" class="full">Entrar na sala</button></article>
     </section>
-    <p id="status" class="status" role="status">Crie uma sala ou entre com o código de um amigo.</p>
+    <p id="status" class="status hidden" role="status">Crie uma sala ou entre com o código de um amigo.</p>
     <section id="arena" class="hidden">
       <article class="panel room-panel">
         <div class="room-top"><div><span class="eyebrow">CÓDIGO DA ARENA</span><div id="codeLabel" class="room-code">------</div></div><button id="copy">Copiar código</button><span class="grow"></span><button id="leave" class="subtle">Sair</button></div>
         <div class="eyebrow">JOGADORES CONECTADOS</div><div id="players" class="players"></div>
-        <div id="themeBox" class="theme-box"><span class="eyebrow">TEMA DA RODADA</span><strong id="theme">Aguardando anfitrião...</strong><span id="roundInfo" class="muted">3 rodadas · 60 segundos por desenho</span></div>
+        <div id="themeBox" class="theme-box"><span class="eyebrow">TEMA DA RODADA</span><strong id="theme">Aguardando anfitrião...</strong><span id="roundInfo" class="muted">3 rodadas · 2 minutos por desenho</span></div>
         <div class="room-actions"><p id="phaseText" class="muted">Aguardando o anfitrião iniciar a batalha.</p><div class="timer" id="countdown">120s</div><div id="durationSetting" class="duration-setting hidden"><label for="roundDuration">Duração de cada rodada</label><select id="roundDuration"><option value="60">1 minuto</option><option value="90">1 minuto e 30 segundos</option><option value="120" selected>2 minutos</option><option value="180">3 minutos</option><option value="300">5 minutos</option></select></div><button id="start" class="primary hidden">Começar batalha</button></div>
       </article>
       <article id="drawing" class="panel hidden">
