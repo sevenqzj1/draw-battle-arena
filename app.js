@@ -28,7 +28,7 @@ function syncState(){if(isHost)send('state',{game,players})}
 function refImage(themeObj){const emoji=themeObj?.emoji||'🎨',name=themeObj?.name||'Referência';const svg='<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" rx="28" fill="#f8fafc"/><path d="M0 440 Q190 390 400 445 T800 430 V600 H0Z" fill="#dbeafe"/><circle cx="650" cy="110" r="46" fill="#fde68a"/><g font-family="Arial,sans-serif" text-anchor="middle"><text x="400" y="115" font-size="24" fill="#475569">IMAGEM DE REFERÊNCIA</text><text x="400" y="355" font-size="220">'+emoji+'</text><text x="400" y="515" font-size="44" font-weight="700" fill="#0f172a">'+escapeHtml(name)+'</text></g></svg>';return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
 function renderPlayers(){const count=Object.keys(players).length;$('playerCount').textContent=count+'/'+MAX_PLAYERS;$('players').innerHTML=Object.values(players).map(p=>'<span class="pill">'+escapeHtml(p.name)+(p.id===player?' (você)':'')+'</span>').join('')||'<span class="muted">Esperando jogadores entrarem...</span>'}
 function stageLabel(){return ({lobby:'SALA',ready:'PREPARAÇÃO',draw:'DESENHO',vote:'VOTAÇÃO',results:'RESULTADOS'})[game.phase]||'SALA'}
-function renderReference(){const img=$('referenceImage');if(game.reference){img.src=game.reference;img.alt='Imagem de referência: '+game.theme;$('referencePanel').classList.remove('hidden')}else $('referencePanel').classList.add('hidden')}
+function renderReference(){const img=$('referenceImage');if(game.reference){img.src=game.reference;img.alt='Imagem de referência: '+game.theme;$('voteReferenceImage').src=game.reference;$('voteReferenceImage').alt='Referência para comparar os desenhos';$('referencePanel').classList.remove('hidden')}else $('referencePanel').classList.add('hidden')}
 function render(){
  $('setup').classList.add('hidden');$('loginGate').classList.add('hidden');$('arena').classList.remove('hidden');
  $('durationSetting').classList.toggle('hidden',!isHost||game.phase!=='lobby');
@@ -57,7 +57,7 @@ function startConnect(roomCode,name,host){
   if(!fresh[player])return;
   if(Object.keys(fresh).length>MAX_PLAYERS){
    if(fresh[player]&&!isHost){say('A sala está cheia (15/15). Você não entrou na partida.');sb.removeChannel(channel);channel=null;room='';$('arena').classList.add('hidden');$('setup').classList.remove('hidden');return}
-   const ids=Object.keys(fresh);if(isHost){send('room-full',{ids:ids.slice(MAX_PLAYERS)});fresh[ids[MAX_PLAYERS]||player]&&delete fresh[ids[MAX_PLAYERS]]}
+   const ordered=Object.values(fresh).sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0));const excess=ordered.slice(MAX_PLAYERS).map(p=>p.id);if(isHost&&excess.length){send('room-full',{ids:excess});excess.forEach(id=>delete fresh[id])}
   }
   players=fresh;if(isHost)syncState();renderPlayers();
  });
