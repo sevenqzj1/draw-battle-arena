@@ -19,7 +19,7 @@ function send(event,payload){if(channel)channel.send({type:'broadcast',event,pay
 function syncState(){if(isHost)send('state',{game,players})}
 function renderPlayers(){$('players').innerHTML=Object.values(players).map(p=>'<span class="pill">'+escapeHtml(p.name)+(p.id===player?' (você)':'')+'</span>').join('')||'<span class="muted">Esperando jogadores entrarem...</span>'}
 function render(){
- $('setup').classList.add('hidden');$('arena').classList.remove('hidden');
+ $('setup').classList.add('hidden');$('arena').classList.remove('hidden');$('durationSetting').classList.toggle('hidden',!isHost||game.phase!=='lobby');
  $('codeLabel').textContent=room;$('theme').textContent=game.theme||'Aguardando anfitrião...';
  $('roundInfo').textContent=game.phase==='lobby'?'3 rodadas · 60 segundos por desenho':'Rodada '+game.round+' de 3';
  $('start').classList.toggle('hidden',!isHost||game.phase!=='lobby');
@@ -70,7 +70,7 @@ function endStroke(){if(!painting)return;painting=false;activeStroke=null;send('
 canvas.addEventListener('pointerup',endStroke);canvas.addEventListener('pointercancel',endStroke);
 function clearCanvas(announce=true){ctx.fillStyle='#fff';ctx.fillRect(0,0,800,600);undoStack=[];if(announce)send('clear-canvas',{id:player})}
 function replayLocal(){ctx.fillStyle='#fff';ctx.fillRect(0,0,800,600);undoStack.forEach(st=>{st.points.forEach((p,i)=>drawSegment(canvas,{...p,color:st.color,width:st.width},i?st.points[i-1]:null))})}
-function resetDrawing(){clearCanvas(false);submitted=false;$('countdown').textContent='60s';$('liveDrawings').innerHTML='';renderLiveDrawings()}
+function resetDrawing(){clearCanvas(false);undoStack=[];submitted=false;$('countdown').textContent='60s';$('liveDrawings').innerHTML='';renderLiveDrawings()}
 $('eraser').onclick=()=>{eraser=!eraser;$('eraser').textContent=eraser?'Borracha ativa':'Borracha'};
 $('undo').onclick=()=>{undoStack.pop();replayLocal();clearRemoteLive();replayLocal()};
 $('clear').onclick=()=>{clearCanvas();clearRemoteLive()};
