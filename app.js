@@ -8,7 +8,7 @@ const $=id=>document.getElementById(id);
 const THEMES=['Animais','Personagens','Comida','Veículos','Monstros','Esportes','Espaço','Objetos do dia a dia','Criaturas fantásticas','Natureza','Robôs','Profissões'];
 const PALETTE=['#17172a','#f43f5e','#fb923c','#facc15','#4ade80','#22d3ee','#3b82f6','#a78bfa','#f472b6','#ffffff','#92400e','#000000'];
 let channel=null,room='',player='',isHost=false,players={},timer=null,seconds=60,strokeColor=PALETTE[0],eraser=false,painting=false,activeStroke=null,undoStack=[],submitted=false,roundToken=0;
-let game={phase:'lobby',round:1,theme:'',drawings:{},votes:{},scores:{}};
+let game={phase:'lobby',round:1,theme:'',usedThemes:[],drawings:{},votes:{},scores:{}};
 const canvas=$('canvas'),ctx=canvas.getContext('2d');
 ctx.lineCap='round';ctx.lineJoin='round';ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -53,10 +53,10 @@ $('join').onclick=()=>{const name=$('joinName').value.trim(),roomCode=$('roomCod
 $('roomCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(room);say('Código copiado!')}catch{say('Código da sala: '+room)}};
 $('leave').onclick=async()=>{if(timer)clearInterval(timer);if(channel)await sb.removeChannel(channel);channel=null;room='';players={};game={phase:'lobby',round:1,theme:'',drawings:{},votes:{},scores:{}};$('arena').classList.add('hidden');$('setup').classList.remove('hidden');say('Você saiu da arena.')};
-$('start').onclick=()=>{if(!isHost)return;game={phase:'draw',round:1,theme:THEMES[Math.floor(Math.random()*THEMES.length)],drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;resetDrawing();syncState();render();startTimer(60)};
+$('start').onclick=()=>{if(!isHost)return;const firstTheme=THEMES[Math.floor(Math.random()*THEMES.length)];game={phase:'draw',round:1,theme:firstTheme,usedThemes:[firstTheme],drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;resetDrawing();syncState();render();startTimer(60)};
 function startTimer(value){if(timer)clearInterval(timer);seconds=value;$('countdown').textContent=seconds+'s';const token=++roundToken;timer=setInterval(()=>{if(token!==roundToken)return;seconds--;$('countdown').textContent=seconds+'s';if(seconds<=0){clearInterval(timer);if(!submitted)submitDrawing();if(isHost)beginVote()}},1000)}
 function beginVote(){if(!isHost||game.phase!=='draw')return;game.phase='vote';if(timer)clearInterval(timer);syncState();render();say('Tempo encerrado! Hora de votar.')}
-function startNextRound(){if(!isHost)return;if(game.round>=3){game.phase='results';syncState();render();return}game.round++;game.phase='draw';game.theme=THEMES[Math.floor(Math.random()*THEMES.length)];game.drawings={};game.votes={};submitted=false;resetDrawing();syncState();render();startTimer(60)}
+function startNextRound(){if(!isHost)return;if(game.round>=3){game.phase='results';syncState();render();return}game.round++;game.phase='draw';const availableThemes=THEMES.filter(t=>!(game.usedThemes||[]).includes(t));game.theme=availableThemes[Math.floor(Math.random()*availableThemes.length)]||THEMES[(game.round-1)%THEMES.length];game.usedThemes=[...(game.usedThemes||[]),game.theme];game.drawings={};game.votes={};submitted=false;resetDrawing();syncState();render();startTimer(60)}
 $('nextRound').onclick=startNextRound;
 $('playAgain').onclick=()=>{if(!isHost)return say('Só o anfitrião pode reiniciar a partida.');game={phase:'lobby',round:1,theme:'',drawings:{},votes:{},scores:Object.fromEntries(Object.keys(players).map(id=>[id,0]))};submitted=false;syncState();render()};
 function getPos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
