@@ -14,7 +14,7 @@
     '#7d2456','#a83275','#d44798','#ef6eb6','#f49acb','#f8c2df','#ffe0ef','#fff2f8',
     '#593b2a','#80583d','#a87550','#c9936a','#e0b18c','#efd0b5','#f7e3d4','#fff7ef'
   ];
-  const uniquePalette = [...new Set(palette)].slice(0, 66);
+  const uniquePalette = [...new Set(palette)].filter((_, i) => i % 4 !== 3).slice(0, 66);
   const colors = document.getElementById('colors');
   if (!colors) return;
 
