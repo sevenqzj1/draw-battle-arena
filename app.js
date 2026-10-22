@@ -102,8 +102,21 @@ async function startConnect(roomCode,name,host){
   const user=await ensureAuthenticated();authUserId=user.id;dbRoomId=null;dbPlayerId=null;dbRoundId=null;dbRoundBase=0;lastDbRoundNumber=0;roomSettings={};restoreFailed=false;
   let member=null,roomRecord=null;
   if(host){
-   const {data,error}=await sb.rpc('create_game_room',{p_code:roomCode,p_display_name:name,p_max_players:MAX_PLAYERS});
-   if(error)throw error;roomRecord=Array.isArray(data)?data[0]:data;createdRoomId=roomRecord?.id;
+   let creationError=null;
+   for(let attempt=0;attempt<8;attempt++){
+    const candidate=code();
+    const {data,error}=await sb.rpc('create_game_room',{p_code:candidate,p_display_name:name,p_max_players:MAX_PLAYERS});
+    if(!error){
+     roomRecord=Array.isArray(data)?data[0]:data;
+     if(roomRecord?.id){roomCode=roomRecord.code||candidate;createdRoomId=roomRecord.id;creationError=null;break}
+     creationError=new Error('O banco não retornou a nova sala.');
+     break;
+    }
+    creationError=error;
+    if(String(error.code)==='23505'||/game_rooms_code_key|duplicate key value/i.test(String(error.message||'')))continue;
+    throw error;
+   }
+   if(creationError)throw new Error(/game_rooms_code_key|duplicate key value/i.test(String(creationError.message||''))?'Não foi possível gerar um código exclusivo após várias tentativas. Tente novamente.':String(creationError.message||creationError));
    if(!roomRecord?.id)throw new Error('O banco não retornou a nova sala.');
    const result=await sb.from('game_players').select('id,room_id,display_name,user_id,joined_at').eq('room_id',roomRecord.id).eq('user_id',user.id).single();
    if(result.error)throw result.error;member=result.data;
@@ -161,7 +174,9 @@ async function startConnect(roomCode,name,host){
  }finally{connecting=false;$('create').disabled=false;$('join').disabled=false}
 }
 $('loginEnter').onclick=()=>{const name=$('loginName').value.trim();if(!name)return say('Digite seu nome para continuar.');$('hostName').value=name;$('joinName').value=name;$('loginGate').classList.add('hidden');$('setup').classList.remove('hidden');say('Bem-vindo, '+name+'! Crie uma sala ou entre com o código de um amigo.')};
+$('loginGoogle').onclick=async()=>{const button=$('loginGoogle');button.disabled=true;say('Conectando com o Google…');try{const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin,queryParams:{prompt:'select_account'}}});if(error)throw error}catch(error){say('Login Google não configurado ou indisponível: '+friendlyError(error));button.disabled=false}};
 $('loginName').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginEnter').click()});
+sb.auth.getSession().then(({data,error})=>{if(error){console.warn('Falha ao restaurar sessão:',error.message);return}const user=data?.session?.user;if(!user)return;const isGoogle=user.app_metadata?.provider==='google'||user.identities?.some(identity=>identity.provider==='google');if(!isGoogle)return;const name=String(user.user_metadata?.full_name||user.user_metadata?.name||user.user_metadata?.preferred_username||user.email?.split('@')[0]||'Jogador').trim().slice(0,20);$('loginName').value=name;$('hostName').value=name;$('joinName').value=name;$('loginGate').classList.add('hidden');$('setup').classList.remove('hidden');say('Conta Google conectada. Você já pode criar uma sala ou entrar com um código.')});
 $('create').onclick=()=>{const name=$('hostName').value.trim();if(!name)return say('Digite seu nome para criar uma sala.');startConnect(code(),name,true)};
 $('join').onclick=()=>{const name=$('joinName').value.trim(),roomCode=$('roomCode').value.trim().toUpperCase();if(!name||roomCode.length!==6)return say('Digite seu nome e o código de seis caracteres pode ser apelidos sapeka do danilo');startConnect(roomCode,name,false)};
 $('roomCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
