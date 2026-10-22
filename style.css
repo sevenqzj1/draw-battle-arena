@@ -57,3 +57,15 @@ canvas{cursor:crosshair}
 .podium-first .podium-rank{color:#f6d36b}
 #submissions .drawing-name{letter-spacing:.6px}
 @media(max-width:650px){.reference-panel{grid-template-columns:1fr}.reference-panel img{max-height:220px}.podium-first{transform:none}.count-badge{font-size:11px}}
+
+
+/* Google OAuth + transições suaves de fase */
+.google-login{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#202124;border:1px solid #dadce0;box-shadow:0 2px 7px #0002;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.google-login:hover{filter:brightness(.97);transform:translateY(-1px);box-shadow:0 6px 18px #0003}
+.google-login:disabled{opacity:.65;transform:none}
+.google-mark{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:50%;font-size:17px;font-weight:900;color:#4285f4;background:#f5f8ff}
+.panel:not(.hidden){animation:panelEnter .28s cubic-bezier(.2,.75,.25,1) both}
+button,input,select,.drawing-card,.pill,.stage-badge{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease,opacity .18s ease}
+.drawing-card:hover{border-color:#5a5e91;transform:translateY(-2px)}
+@keyframes panelEnter{from{opacity:0;transform:translateY(10px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.panel:not(.hidden),.google-login,.drawing-card{animation:none;transition:none}}
