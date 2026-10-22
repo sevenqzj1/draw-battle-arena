@@ -22,7 +22,7 @@ const canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 ctx.lineCap='round';ctx.lineJoin='round';ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function say(message){$('status').textContent=message;$('status').classList.remove('hidden')}
-function code(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+function code(){const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';const bytes=new Uint8Array(6);crypto.getRandomValues(bytes);return Array.from(bytes,b=>alphabet[b%alphabet.length]).join('')}
 function myName(){return players[player]?.name||'Jogador'}
 function send(event,payload){if(channel)channel.send({type:'broadcast',event,payload})}
 function publicGameState(){const drawings=Object.fromEntries(Object.entries(game.drawings||{}).map(([id,d])=>[id,{id:d.id,name:d.name,drawingId:d.drawingId,round:d.round,submittedAt:d.submittedAt}]));const podiumDrawings=Object.fromEntries(Object.entries(game.podiumDrawings||{}).map(([id,d])=>[id,{id:d.id,name:d.name,votes:d.votes,round:d.round,drawingId:d.drawingId}]));return {...game,drawings,podiumDrawings,votes:game.phase==='results'?(game.votes||{}):{}}}
